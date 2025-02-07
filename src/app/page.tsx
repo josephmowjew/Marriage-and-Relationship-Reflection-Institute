@@ -45,13 +45,13 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Image
+        <Image
                 src="/couple-image.jpg"
                 alt="Happy couple talking and smiling"
                 fill
                 className="object-cover object-[50%_10%] scale-125"
-                priority
-              />
+          priority
+        />
               {/* Gradient Overlay */}
               <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#F8F5F2] to-transparent"></div>
             </motion.div>
@@ -359,7 +359,7 @@ export default function Home() {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="aspect-[3/4] relative">
-                    <Image
+          <Image
                       src="/seminars/1.jpeg"
                       alt="Seminar poster"
                       fill
@@ -388,7 +388,7 @@ export default function Home() {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="aspect-[3/4] relative">
-                    <Image
+          <Image
                       src="/seminars/2.jpeg"
                       alt="Seminar poster"
                       fill
