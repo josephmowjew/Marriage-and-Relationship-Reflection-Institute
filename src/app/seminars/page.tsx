@@ -104,7 +104,7 @@ export default function SeminarsPage() {
                   <p className="text-gray-600 mb-6 line-clamp-2">A comprehensive seminar on establishing and maintaining healthy relationships.</p>
                   <div className="mt-auto">
                     <Button className="w-full bg-red-600 hover:bg-red-700" asChild>
-                      <Link href="/seminars/register" className="flex items-center justify-center gap-2">
+                      <Link href="/seminars/register/building-foundations" className="flex items-center justify-center gap-2">
                         Register Now
                         <ArrowRight className="w-4 h-4" />
                       </Link>
@@ -147,7 +147,7 @@ export default function SeminarsPage() {
                   <p className="text-gray-600 mb-6 line-clamp-2">Empowering pastoral leaders with effective ministry strategies.</p>
                   <div className="mt-auto">
                     <Button className="w-full bg-red-600 hover:bg-red-700" asChild>
-                      <Link href="/seminars/register" className="flex items-center justify-center gap-2">
+                      <Link href="/seminars/register/pastoral-excellence" className="flex items-center justify-center gap-2">
                         Register Now
                         <ArrowRight className="w-4 h-4" />
                       </Link>
@@ -190,7 +190,7 @@ export default function SeminarsPage() {
                   <p className="text-gray-600 mb-6 line-clamp-2">Master effective communication strategies for a stronger relationship.</p>
                   <div className="mt-auto">
                     <Button className="w-full bg-red-600 hover:bg-red-700" asChild>
-                      <Link href="/seminars/register" className="flex items-center justify-center gap-2">
+                      <Link href="/seminars/register/communication-marriage" className="flex items-center justify-center gap-2">
                         Register Now
                         <ArrowRight className="w-4 h-4" />
                       </Link>
