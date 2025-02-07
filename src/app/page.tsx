@@ -498,37 +498,42 @@ export default function Home() {
               >
                 <div>
                   <p className="text-sm text-gray-400 leading-relaxed">
-                    Developed in 1996, The Marriage Course has been attended by over 2 million couples in 130 countries around the world.
+                    MRRI provides expert marriage mentorship and counselling, helping couples build stronger relationships through professional guidance and support.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium mb-4">For guests</h3>
+                  <h3 className="text-lg font-medium mb-4">Marriage Programs</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
-                        FAQ
+                      <Link href="/pre-marriage" className="text-gray-400 hover:text-white transition-colors">
+                        Pre-Marriage Course
                       </Link>
                     </li>
                     <li>
-                      <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
-                        Contact us
+                      <Link href="/marriage" className="text-gray-400 hover:text-white transition-colors">
+                        Marriage Course
                       </Link>
                     </li>
                     <li>
-                      <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                        Privacy policy
+                      <Link href="/seminars" className="text-gray-400 hover:text-white transition-colors">
+                        Seminars
                       </Link>
                     </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium mb-4">For course leaders</h3>
+                  <h3 className="text-lg font-medium mb-4">Mentorship</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="/training" className="text-gray-400 hover:text-white transition-colors">
-                        Training
+                      <Link href="/marriage-mentorship" className="text-gray-400 hover:text-white transition-colors">
+                        Marriage Mentorship
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/pastoral-mentorship" className="text-gray-400 hover:text-white transition-colors">
+                        Pastoral Mentorship
                       </Link>
                     </li>
                     <li>
@@ -536,30 +541,25 @@ export default function Home() {
                         Resources
                       </Link>
                     </li>
-                    <li>
-                      <Link href="/support" className="text-gray-400 hover:text-white transition-colors">
-                        Support
-                      </Link>
-                    </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium mb-4">More information</h3>
+                  <h3 className="text-lg font-medium mb-4">Contact</h3>
                   <ul className="space-y-2">
                     <li>
                       <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
-                        About us
+                        About Us
                       </Link>
                     </li>
                     <li>
-                      <Link href="/testimonials" className="text-gray-400 hover:text-white transition-colors">
-                        Testimonials
+                      <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                        Contact Us
                       </Link>
                     </li>
                     <li>
-                      <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">
-                        Blog
+                      <Link href="/book" className="text-gray-400 hover:text-white transition-colors">
+                        Book a Session
                       </Link>
                     </li>
                   </ul>
