@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, ArrowRight, ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { getStripe } from '@/lib/stripe';
 
 // Form validation schemas
 const formSchema = {
@@ -101,9 +102,43 @@ export default function RegisterPage() {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Handle final submission
-      console.log('Final form data:', newFormData);
-      // TODO: Implement API call
+      try {
+        // Create Stripe checkout session
+        const response = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            seminarId,
+            title: seminar.title,
+            price: seminar.price,
+            attendees: newFormData.attendees,
+            email: newFormData.email,
+            firstName: newFormData.firstName,
+            lastName: newFormData.lastName,
+          }),
+        });
+
+        const { sessionId, error } = await response.json();
+
+        if (error) {
+          console.error('Error creating checkout session:', error);
+          return;
+        }
+
+        // Redirect to Stripe checkout
+        const stripe = await getStripe();
+        const { error: stripeError } = await stripe!.redirectToCheckout({
+          sessionId,
+        });
+
+        if (stripeError) {
+          console.error('Stripe checkout error:', stripeError);
+        }
+      } catch (err) {
+        console.error('Error:', err);
+      }
     }
   };
 

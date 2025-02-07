@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+const playfair = Playfair_Display({ 
+  subsets: ["latin"],
+  variable: '--font-playfair',
+});
+
+const dmSans = DM_Sans({ 
+  subsets: ["latin"],
+  variable: '--font-dm-sans',
+});
 
 export const metadata: Metadata = {
   title: "MRRI - Marriage and Relationship Reflection Institute",
@@ -18,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${playfair.variable} ${dmSans.variable} font-sans min-h-screen flex flex-col`}>
         <Header />
         <main className="flex-1">
           {children}
