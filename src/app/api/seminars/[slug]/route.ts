@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
-// GET /api/seminars/[slug] - Get a single seminar by slug
+// GET /api/seminars/[slug] - Get a single seminar by slug or ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
+  const { slug } = await context.params;
+
   try {
-    const seminar = await prisma.seminar.findUnique({
+    // Try to find by ID first
+    let seminar = await prisma.seminar.findUnique({
       where: {
-        slug: params.slug,
+        id: slug, // Now using the awaited slug
       },
     });
+
+    // If not found by ID, try to find by slug
+    if (!seminar) {
+      seminar = await prisma.seminar.findUnique({
+        where: {
+          slug: slug,
+        },
+      });
+    }
 
     if (!seminar) {
       return NextResponse.json(
@@ -33,17 +45,19 @@ export async function GET(
 // PUT /api/seminars/[slug] - Update a seminar (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
+  const { slug } = await context.params;
+  
   try {
     const body = await request.json();
     
     // TODO: Add admin authentication
     
-    // Check if seminar exists
+    // Check if seminar exists by ID
     const existingSeminar = await prisma.seminar.findUnique({
       where: {
-        slug: params.slug,
+        id: slug, // Now using the awaited slug
       },
     });
 
@@ -56,7 +70,7 @@ export async function PUT(
 
     const updatedSeminar = await prisma.seminar.update({
       where: {
-        slug: params.slug,
+        id: slug,
       },
       data: {
         title: body.title,
@@ -82,15 +96,17 @@ export async function PUT(
 // DELETE /api/seminars/[slug] - Delete a seminar (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
+  const { slug } = await context.params;
+  
   try {
     // TODO: Add admin authentication
     
-    // Check if seminar exists
+    // Check if seminar exists by ID
     const existingSeminar = await prisma.seminar.findUnique({
       where: {
-        slug: params.slug,
+        id: slug, // Now using the awaited slug
       },
     });
 
@@ -103,7 +119,7 @@ export async function DELETE(
 
     await prisma.seminar.delete({
       where: {
-        slug: params.slug,
+        id: slug,
       },
     });
 
