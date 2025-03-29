@@ -9,26 +9,49 @@ import { motion } from 'framer-motion';
 
 export default function SuccessPage() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get('session_id');
+  const reference = searchParams.get('reference');
+  const trxref = searchParams.get('trxref'); // Paystack also sends this parameter
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [paymentInfo, setPaymentInfo] = useState<any>(null);
 
   useEffect(() => {
-    // Here you would typically verify the payment with your backend
-    // and update your database
+    // Verify the payment with the backend
     const verifyPayment = async () => {
-      try {
+      // Use either reference or trxref (whichever is available)
+      const paymentReference = reference || trxref;
+      
+      if (!paymentReference) {
+        setError('No transaction reference provided');
         setLoading(false);
-      } catch (err) {
-        setError('Could not verify payment. Please contact support.');
+        return;
+      }
+
+      try {
+        // Call an API route to verify the payment status
+        const response = await fetch(`/api/verify-payment?reference=${paymentReference}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Could not verify payment');
+        }
+
+        setPaymentInfo(data);
+        setLoading(false);
+      } catch (err: any) {
+        console.error('Error verifying payment:', err);
+        setError(err.message || 'Could not verify payment. Please contact support.');
         setLoading(false);
       }
     };
 
-    if (sessionId) {
+    if (reference || trxref) {
       verifyPayment();
+    } else {
+      setError('No transaction reference provided');
+      setLoading(false);
     }
-  }, [sessionId]);
+  }, [reference, trxref]);
 
   if (loading) {
     return (
@@ -94,6 +117,37 @@ export default function SuccessPage() {
           <p className="text-gray-600 mb-8">
             Thank you for registering for our seminar. You will receive a confirmation email shortly with all the details.
           </p>
+          {paymentInfo && (
+            <div className="bg-white rounded-lg p-6 mb-8 shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
+              <div className="flex flex-col space-y-2 text-left">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Seminar:</span>
+                  <span className="font-medium">{paymentInfo.title}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Attendees:</span>
+                  <span className="font-medium">{paymentInfo.attendees}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount Paid:</span>
+                  <span className="font-medium">R{paymentInfo.amount / 100}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Email:</span>
+                  <span className="font-medium">{paymentInfo.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Reference:</span>
+                  <span className="font-medium">{paymentInfo.reference}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Method:</span>
+                  <span className="font-medium">{paymentInfo.channel}</span>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="space-y-4">
             <Button className="w-full sm:w-auto" asChild>
               <Link href="/seminars">Browse More Seminars</Link>

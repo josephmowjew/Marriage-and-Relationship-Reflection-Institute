@@ -36,10 +36,19 @@ export default function SeminarsPage() {
               Join our expert-led seminars designed to strengthen marriages and empower ministry leaders.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="bg-white text-red-600 hover:bg-gray-100" asChild>
+              <Button 
+                size="lg" 
+                className="bg-white text-red-600 hover:bg-gray-100 transform transition-all duration-300 ease-out hover:scale-105 active:scale-95 hover:-translate-y-0.5 active:translate-y-0.5" 
+                asChild
+              >
                 <Link href="#upcoming">View Upcoming Seminars</Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10" asChild>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-white border-white hover:bg-white/20 hover:text-white backdrop-blur-sm bg-white/10 transform transition-all duration-300 ease-out hover:scale-105 active:scale-95 hover:-translate-y-0.5 active:translate-y-0.5 hover:shadow-lg hover:shadow-white/20" 
+                asChild
+              >
                 <Link href="/contact">Request Private Seminar</Link>
               </Button>
             </div>

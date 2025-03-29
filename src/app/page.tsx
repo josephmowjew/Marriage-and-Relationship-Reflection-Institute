@@ -104,7 +104,7 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="text-lg text-gray-600">
-                    At MRRI, we provide expert guidance through personalized mentorship, counselling sessions, and structured programs designed to strengthen your relationship.
+                    At Marriage and Relationship Reflection Institute, we provide expert guidance through personalized mentorship, counselling sessions, and structured programs designed to strengthen your relationship.
                   </p>
                 </div>
               </div>
@@ -155,12 +155,12 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-      {/* Why Choose MRRI */}
+      {/* Why Choose Marriage and Relationship Reflection Institute */}
       <AnimatedSection>
         <section className="py-20 px-4 bg-white">
           <div className="container mx-auto">
             <div className="max-w-6xl mx-auto">
-              <p className="text-red-600 font-medium mb-4">Why Choose MRRI</p>
+              <p className="text-red-600 font-medium mb-4">Why Choose Marriage and Relationship Reflection Institute</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                 <div>
                   <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-8">
@@ -498,7 +498,7 @@ export default function Home() {
               >
                 <div>
                   <p className="text-sm text-gray-400 leading-relaxed">
-                    MRRI provides expert marriage mentorship and counselling, helping couples build stronger relationships through professional guidance and support.
+                    Marriage and Relationship Reflection Institute provides expert marriage mentorship and counselling, helping couples build stronger relationships through professional guidance and support.
                   </p>
                 </div>
 

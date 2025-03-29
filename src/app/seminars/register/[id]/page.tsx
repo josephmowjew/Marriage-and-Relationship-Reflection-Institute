@@ -12,8 +12,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, ArrowRight, ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { getStripe } from '@/lib/stripe';
+import { useParams, useRouter } from 'next/navigation';
+import { getPaystack } from '@/lib/paystack';
 
 // Form validation schemas
 const formSchema = {
@@ -73,8 +73,10 @@ const SEMINARS = {
 
 export default function RegisterPage() {
   const params = useParams();
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({});
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const seminarId = params.id as string;
   const seminar = SEMINARS[seminarId as keyof typeof SEMINARS];
@@ -103,7 +105,9 @@ export default function RegisterPage() {
       setStep(step + 1);
     } else {
       try {
-        // Create Stripe checkout session
+        setIsProcessing(true);
+        
+        // Create Paystack payment initialization
         const response = await fetch('/api/create-checkout-session', {
           method: 'POST',
           headers: {
@@ -120,24 +124,38 @@ export default function RegisterPage() {
           }),
         });
 
-        const { sessionId, error } = await response.json();
+        const data = await response.json();
 
-        if (error) {
-          console.error('Error creating checkout session:', error);
+        if (data.error) {
+          console.error('Error creating payment:', data.error);
+          setIsProcessing(false);
           return;
         }
 
-        // Redirect to Stripe checkout
-        const stripe = await getStripe();
-        const { error: stripeError } = await stripe!.redirectToCheckout({
-          sessionId,
-        });
-
-        if (stripeError) {
-          console.error('Stripe checkout error:', stripeError);
+        if (newFormData.paymentMethod === 'credit_card') {
+          // Use Paystack inline for card payments
+          const paystack = await getPaystack();
+          
+          if (paystack) {
+            paystack.resumeTransaction(data.access_code, 
+              (response) => {
+                // Success callback - user will be redirected to success page by Paystack
+                console.log('Payment successful', response);
+              },
+              () => {
+                // Close callback - user closed the payment modal
+                console.log('Payment modal closed');
+                setIsProcessing(false);
+              }
+            );
+          }
+        } else {
+          // For bank transfers, redirect to the payment URL
+          router.push(data.authorization_url);
         }
       } catch (err) {
         console.error('Error:', err);
+        setIsProcessing(false);
       }
     }
   };
@@ -199,8 +217,9 @@ export default function RegisterPage() {
                 <motion.div
                   className="h-full bg-red-600"
                   initial={{ width: '0%' }}
-                  animate={{ width: `${((step - 1) / 2) * 100}%` }}
-                  transition={{ duration: 0.3 }}
+                  animate={{ 
+                    width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' 
+                  }}
                 />
               </div>
             </div>
@@ -400,27 +419,41 @@ export default function RegisterPage() {
                   </>
                 )}
 
-                <div className="flex justify-between pt-6">
-                  {step > 1 && (
+                {/* Submit Button */}
+                <div className="mt-8 flex justify-between">
+                  {step > 1 ? (
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setStep(step - 1)}
-                      className="flex items-center gap-2"
+                      disabled={isProcessing}
+                      className="flex items-center"
                     >
-                      <ArrowLeft className="w-4 h-4" />
+                      <ArrowLeft className="mr-2 h-4 w-4" />
                       Back
                     </Button>
+                  ) : (
+                    <div></div>
                   )}
-                  <Button
+                  <Button 
                     type="submit"
-                    className={`bg-red-600 hover:bg-red-700 text-white ml-auto flex items-center gap-2 ${
-                      isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isProcessing}
+                    className="flex items-center"
                   >
-                    {step === 3 ? 'Complete Registration' : 'Continue'}
-                    <ArrowRight className="w-4 h-4" />
+                    {isProcessing ? (
+                      <div className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing...
+                      </div>
+                    ) : (
+                      <>
+                        {step < 3 ? 'Continue' : 'Complete Registration'}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>

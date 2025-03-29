@@ -1,20 +1,13 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
+if (!process.env.PAY_STACK_SECRET) {
+  throw new Error('PAY_STACK_SECRET is not set in environment variables');
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-01-27.acacia',
-});
 
 export async function POST(req: Request) {
   if (!process.env.NEXT_PUBLIC_BASE_URL) {
-    return NextResponse.json(
-      { error: 'Server configuration error' },
-      { status: 500 }
-    );
+    // Use a default base URL if not set
+    console.warn('NEXT_PUBLIC_BASE_URL is not set, using current host as fallback');
   }
 
   try {
@@ -37,39 +30,56 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'zar',
-            product_data: {
-              name: title,
-              description: `Registration for ${attendees} ${attendees === 1 ? 'person' : 'people'}`,
-            },
-            unit_amount: price * 100, // Convert to cents
-          },
-          quantity: attendees,
-        },
-      ],
-      customer_email: email,
-      metadata: {
-        seminarId,
-        attendees,
-        firstName,
-        lastName,
+    // Calculate the total amount
+    const amount = price * attendees;
+
+    // Generate a unique reference
+    const reference = `seminar-${seminarId}-${Date.now()}`;
+
+    // Get base URL from environment or construct from request
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      `${req.headers.get('x-forwarded-proto') || 'http'}://${req.headers.get('host')}`;
+
+    // Create Paystack payment initialization
+    const response = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.PAY_STACK_SECRET}`,
+        'Content-Type': 'application/json',
       },
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/seminars/register/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/seminars/register/${seminarId}`,
+      body: JSON.stringify({
+        email,
+        amount: amount * 100, // Convert to kobo/cents
+        reference,
+        callback_url: `${baseUrl}/seminars/register/success`,
+        metadata: {
+          seminarId,
+          attendees,
+          firstName,
+          lastName,
+          title,
+        },
+      }),
     });
 
-    return NextResponse.json({ sessionId: session.id });
+    const data = await response.json();
+
+    if (!data.status) {
+      return NextResponse.json(
+        { error: data.message || 'Error initializing payment' },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({ 
+      authorization_url: data.data.authorization_url,
+      access_code: data.data.access_code,
+      reference: data.data.reference
+    });
   } catch (err) {
-    console.error('Error creating checkout session:', err);
+    console.error('Error creating payment:', err);
     return NextResponse.json(
-      { error: 'Error creating checkout session' },
+      { error: 'Error creating payment' },
       { status: 500 }
     );
   }
