@@ -6,8 +6,72 @@ import Image from "next/image";
 import { Calendar, MapPin, Users, ArrowRight, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedSection from "@/components/ui/animated-section";
+import { useEffect, useState } from "react";
+import { getSeminars } from "../actions/seminars";
+import { format } from "date-fns";
+
+interface Seminar {
+  id: string;
+  title: string;
+  description: string;
+  date: string; // ISO string
+  location: string;
+  imageUrl: string;
+  audienceType: string;
+  slug: string;
+}
+
+interface PrismaSeminar {
+  id: string;
+  title: string;
+  description: string;
+  date: Date;
+  location: string;
+  imageUrl: string;
+  audienceType: string;
+  slug: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export default function SeminarsPage() {
+  const [seminars, setSeminars] = useState<Seminar[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSeminars = async () => {
+      try {
+        setLoading(true);
+        const result = await getSeminars();
+        
+        if ('error' in result && result.error) {
+          setError(result.error);
+        } else if (result.seminars) {
+          // Convert date to string for proper rendering
+          const formattedSeminars = result.seminars.map((seminar: PrismaSeminar) => ({
+            ...seminar,
+            date: seminar.date.toISOString(),
+          }));
+          setSeminars(formattedSeminars);
+        }
+      } catch (err) {
+        setError('Failed to load seminars');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSeminars();
+  }, []);
+
+  // Format date for display
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return format(date, 'MMM dd, yyyy');
+  };
+
   return (
     <div className="bg-[#F8F5F2] pt-32">
       {/* Hero Section */}
@@ -78,137 +142,63 @@ export default function SeminarsPage() {
             </div>
           </AnimatedSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Seminar Cards */}
-            <AnimatedSection delay={0.1} className="h-full">
-              <motion.div 
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col"
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="aspect-[3/4] relative">
-                  <Image
-                    src="/seminars/1.jpeg"
-                    alt="Building Strong Foundations in Marriage"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <div className="flex items-center gap-2 text-white/90 text-sm mb-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>Feb 28, 2024</span>
-                      <span className="mx-2">•</span>
-                      <MapPin className="w-4 h-4" />
-                      <span>Johannesburg</span>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <p className="text-lg text-gray-500">Loading seminars...</p>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center items-center h-64">
+              <p className="text-lg text-red-500">{error}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* Seminar Cards */}
+              {seminars.map((seminar, index) => (
+                <AnimatedSection key={seminar.id} delay={0.1 * index} className="h-full">
+                  <motion.div 
+                    className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col"
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="aspect-[3/4] relative">
+                      <Image
+                        src={seminar.imageUrl}
+                        alt={seminar.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <div className="flex items-center gap-2 text-white/90 text-sm mb-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(seminar.date)}</span>
+                          <span className="mx-2">•</span>
+                          <MapPin className="w-4 h-4" />
+                          <span>{seminar.location}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center gap-2 text-red-600 text-sm font-medium mb-2">
-                    <Users className="w-4 h-4" />
-                    <span>For Couples</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 line-clamp-2">Building Strong Foundations in Marriage</h3>
-                  <p className="text-gray-600 mb-6 line-clamp-2">A comprehensive seminar on establishing and maintaining healthy relationships.</p>
-                  <div className="mt-auto">
-                    <Button className="w-full bg-red-600 hover:bg-red-700" asChild>
-                      <Link href="/seminars/register/building-foundations" className="flex items-center justify-center gap-2">
-                        Register Now
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.2} className="h-full">
-              <motion.div 
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col"
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="aspect-[3/4] relative">
-                  <Image
-                    src="/seminars/2.jpeg"
-                    alt="Pastoral Leadership Excellence"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <div className="flex items-center gap-2 text-white/90 text-sm mb-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>Mar 15, 2024</span>
-                      <span className="mx-2">•</span>
-                      <MapPin className="w-4 h-4" />
-                      <span>Cape Town</span>
+                    <div className="p-6 flex flex-col flex-1">
+                      <div className="flex items-center gap-2 text-red-600 text-sm font-medium mb-2">
+                        <Users className="w-4 h-4" />
+                        <span>{seminar.audienceType}</span>
+                      </div>
+                      <h3 className="text-xl font-bold mb-2 line-clamp-2">{seminar.title}</h3>
+                      <p className="text-gray-600 mb-6 line-clamp-2">{seminar.description}</p>
+                      <div className="mt-auto">
+                        <Button className="w-full bg-red-600 hover:bg-red-700" asChild>
+                          <Link href={`/seminars/register/${seminar.slug}`} className="flex items-center justify-center gap-2">
+                            Register Now
+                            <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center gap-2 text-red-600 text-sm font-medium mb-2">
-                    <Users className="w-4 h-4" />
-                    <span>For Ministry Leaders</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 line-clamp-2">Pastoral Leadership Excellence</h3>
-                  <p className="text-gray-600 mb-6 line-clamp-2">Empowering pastoral leaders with effective ministry strategies.</p>
-                  <div className="mt-auto">
-                    <Button className="w-full bg-red-600 hover:bg-red-700" asChild>
-                      <Link href="/seminars/register/pastoral-excellence" className="flex items-center justify-center gap-2">
-                        Register Now
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatedSection>
-
-            <AnimatedSection delay={0.3} className="h-full">
-              <motion.div 
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col"
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="aspect-[3/4] relative">
-                  <Image
-                    src="/seminars/3.jpeg"
-                    alt="Communication in Marriage"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <div className="flex items-center gap-2 text-white/90 text-sm mb-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>Apr 5, 2024</span>
-                      <span className="mx-2">•</span>
-                      <MapPin className="w-4 h-4" />
-                      <span>Durban</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center gap-2 text-red-600 text-sm font-medium mb-2">
-                    <Users className="w-4 h-4" />
-                    <span>For Couples</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 line-clamp-2">Communication in Marriage</h3>
-                  <p className="text-gray-600 mb-6 line-clamp-2">Master effective communication strategies for a stronger relationship.</p>
-                  <div className="mt-auto">
-                    <Button className="w-full bg-red-600 hover:bg-red-700" asChild>
-                      <Link href="/seminars/register/communication-marriage" className="flex items-center justify-center gap-2">
-                        Register Now
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatedSection>
-          </div>
+                  </motion.div>
+                </AnimatedSection>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -249,7 +239,7 @@ export default function SeminarsPage() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: 0.1 * i }}
                   >
-                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                    <h3 className="text-xl font-bold mb-3">{item.title}</h3>
                     <p className="text-gray-600">{item.description}</p>
                   </motion.div>
                 ))}
@@ -259,29 +249,22 @@ export default function SeminarsPage() {
         </section>
       </AnimatedSection>
 
-      {/* Request Custom Seminar */}
+      {/* CTA Section */}
       <AnimatedSection>
-        <section className="py-20 px-4">
+        <section className="py-20 px-4 bg-red-600 text-white">
           <div className="container mx-auto">
-            <div className="bg-red-600 rounded-3xl p-12 md:p-20 text-white">
-              <div className="max-w-3xl">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  Looking for a Custom Seminar?
-                </h2>
-                <p className="text-xl text-white/90 mb-8">
-                  We offer tailored seminars for churches, organizations, and private groups.
-                </p>
-                <Button 
-                  size="lg" 
-                  className="bg-white text-red-600 hover:bg-gray-100 group"
-                  asChild
-                >
-                  <Link href="/contact" className="flex items-center gap-2">
-                    Get in Touch
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </Button>
-              </div>
+            <div className="max-w-5xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Relationships?</h2>
+              <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
+                Join one of our upcoming seminars and start your journey toward healthier, more fulfilling relationships.
+              </p>
+              <Button 
+                size="lg" 
+                className="bg-white text-red-600 hover:bg-gray-100 px-8 transform transition-all duration-300 ease-out hover:scale-105 active:scale-95" 
+                asChild
+              >
+                <Link href="#upcoming">Browse Seminars</Link>
+              </Button>
             </div>
           </div>
         </section>
